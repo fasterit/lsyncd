@@ -8,14 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        version:
-          - lsyncd_lua5_3
-          # broken with lua 5.4.4. luac segfault
-          # - lsyncd_lua5_4
-          - lsyncd_lua5_1
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: cachix/install-nix-action@v15
-      - run: chmod og-rw ~
-      - run: nix develop .#${{ matrix.version }} --command ./tests/ci-run.sh
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        # lua 5.1 is the default currently, 5.3 is supported but while 5.4 is available in the repo, luarocks has not been compiled against it
+        run: sudo apt-get install --no-install-recommends asciidoc cmake docbook-xml docbook-xsl liblua5.3-dev libxml2-dev libxml2-utils lua5.3 pkg-config xsltproc lua-posix
+      - name: Install luarocks
+        run: sudo apt-get install --no-install-recommends luarocks
+      - name: Run luarocks to get not-packaged dependency
+        run: sudo luarocks install lua-crontab
+      - name: Fixup build dir rights
+        run: chmod og-rw ~
+      - name: Fixup lua tree rights
+        run: sudo chmod -R a+rX /usr/local/share/lua/
+      - name: Build and run tests
+        run: ./tests/ci-run.sh
