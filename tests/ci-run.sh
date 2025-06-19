@@ -4,7 +4,7 @@ set -ex
 
 function cleanup() {
         echo "** abort. cleanup ssh server"
-        cd `dirname $BASH_SOURCE`/..
+        cd `dirname $BASH_SOURCE`/.. || exit 0
         # CLEANUP=`dirname $BASH_SOURCE`/../teardown.lua
         lua tests/teardown.lua
 }
@@ -18,4 +18,5 @@ cd $BUILD_FOLDER
 cmake $SRC
 make VERBOSE=1
 make run-tests
+cd ~
 rm -rf $BUILD_FOLDER
